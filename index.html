@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Pedido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        input[type="number"], button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .alert {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Crear Pedido</h2>
+        <form id="pedidoForm">
+            <label for="user_id">User ID:</label>
+            <input type="number" id="user_id" name="user_id" value="1" required>
+            <button type="submit">Crear Pedido</button>
+            <div class="alert" id="errorMessage"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('pedidoForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Evitar el envío tradicional del formulario
+            
+            const user_id = document.getElementById('user_id').value;  // Obtener el user_id
+
+            // Realizar la solicitud POST
+            fetch('http://127.0.0.1:5000/pedido', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_id: user_id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    // Mostrar mensaje de error
+                    document.getElementById('errorMessage').textContent = data.error;
+                } else {
+                    // Si el pedido fue creado, mostrar el total del pedido
+                    alert('Pedido creado exitosamente. Total: ' + data.total_price);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>
