@@ -26,6 +26,67 @@ class Carrito(db.Model):
 with app.app_context():
     db.create_all()
 
+# --- CRUD Productos ---
+
+# Crear un producto
+@app.route('/producto', methods=['POST'])
+def crear_producto():
+    data = request.get_json()
+    name = data.get('name')
+    price = data.get('price')
+
+    if not name or price is None:
+        return jsonify({"error": "Nombre y precio son obligatorios"}), 400
+
+    nuevo_producto = Producto(name=name, price=price)
+    db.session.add(nuevo_producto)
+    db.session.commit()
+
+    return jsonify({"msg": "Producto creado exitosamente", "id": nuevo_producto.id}), 201
+
+
+# Leer todos los productos
+@app.route('/productos', methods=['GET'])
+def obtener_productos():
+    productos = Producto.query.all()
+    resultado = [{"id": p.id, "name": p.name, "price": p.price} for p in productos]
+    return jsonify(resultado), 200
+
+
+# Actualizar un producto
+@app.route('/producto/<int:id>', methods=['PUT'])
+def actualizar_producto(id):
+    producto = Producto.query.get(id)
+    if not producto:
+        return jsonify({"error": "Producto no encontrado"}), 404
+
+    data = request.get_json()
+    name = data.get('name')
+    price = data.get('price')
+
+    if name:
+        producto.name = name
+    if price is not None:
+        producto.price = price
+
+    db.session.commit()
+    return jsonify({"msg": "Producto actualizado exitosamente"}), 200
+
+
+# Eliminar un producto
+@app.route('/producto/<int:id>', methods=['DELETE'])
+def eliminar_producto(id):
+    producto = Producto.query.get(id)
+    if not producto:
+        return jsonify({"error": "Producto no encontrado"}), 404
+
+    db.session.delete(producto)
+    db.session.commit()
+    return jsonify({"msg": "Producto eliminado exitosamente"}), 200
+
+
+# --- Endpoints de carrito existentes ---
+
 # Endpoint para agregar un producto al carrito
 @app.route('/carrito/agregar', methods=['POST'])
 def add_to_cart():
@@ -108,6 +169,7 @@ def remove_from_cart():
     db.session.commit()
 
     return jsonify({'msg': 'Producto eliminado del carrito'}), 200
+
 
 # Iniciar la aplicación
 if __name__ == '__main__':
