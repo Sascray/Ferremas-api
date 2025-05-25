@@ -114,14 +114,14 @@ def view_cart(user_id):
     if not carritos:
         return jsonify({'error': 'Carrito vacío o no encontrado'}), 404
 
-    cart_items = [{
+    cart_items = [({
         'product': {
             'id': c.producto.id,
             'name': c.producto.name,
             'price': c.producto.price
         },
         'quantity': c.quantity
-    } for c in carritos]
+    }) for c in carritos]
 
     return jsonify({'cart': cart_items}), 200
 
