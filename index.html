@@ -65,6 +65,23 @@
       margin-bottom: 8px;
       padding: 10px;
       border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-small {
+      background-color: #388E3C;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      margin-left: 8px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .btn-small:hover {
+      background-color: #2E7D32;
     }
   </style>
 </head>
@@ -130,6 +147,7 @@
 
   // Cargar productos
   document.getElementById('btnLoad').addEventListener('click', loadProducts);
+  loadProducts(); // cargar al inicio
 
   function loadProducts() {
     fetch(`${apiUrl}/productos`)
@@ -144,6 +162,20 @@
         data.forEach(p => {
           const li = document.createElement('li');
           li.textContent = `ID: ${p.id} | ${p.name} - $${p.price.toFixed(2)}`;
+          
+          // Botones Editar y Eliminar
+          const btnEdit = document.createElement('button');
+          btnEdit.textContent = 'Editar';
+          btnEdit.className = 'btn-small';
+          btnEdit.onclick = () => editarProducto(p);
+
+          const btnDelete = document.createElement('button');
+          btnDelete.textContent = 'Eliminar';
+          btnDelete.className = 'btn-small';
+          btnDelete.onclick = () => eliminarProducto(p.id);
+
+          li.appendChild(btnEdit);
+          li.appendChild(btnDelete);
           list.appendChild(li);
         });
       })
@@ -151,6 +183,45 @@
         showMessage("Error al cargar productos.");
         console.error(error);
       });
+  }
+
+  // Editar producto
+  function editarProducto(producto) {
+    const nuevoNombre = prompt("Nuevo nombre:", producto.name);
+    if (nuevoNombre === null) return; // cancelado
+    if (nuevoNombre.trim() === "") return alert("El nombre no puede estar vacío.");
+
+    const nuevoPrecioStr = prompt("Nuevo precio:", producto.price);
+    if (nuevoPrecioStr === null) return; // cancelado
+    const nuevoPrecio = parseFloat(nuevoPrecioStr);
+    if (isNaN(nuevoPrecio) || nuevoPrecio <= 0) return alert("Precio inválido.");
+
+    fetch(`${apiUrl}/producto/${producto.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: nuevoNombre, price: nuevoPrecio })
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.msg || data.error);
+      loadProducts();
+    })
+    .catch(() => alert("Error al conectar con el servidor."));
+  }
+
+  // Eliminar producto
+  function eliminarProducto(id) {
+    if (!confirm("¿Seguro quieres eliminar este producto?")) return;
+
+    fetch(`${apiUrl}/producto/${id}`, {
+      method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.msg || data.error);
+      loadProducts();
+    })
+    .catch(() => alert("Error al conectar con el servidor."));
   }
 
   function showMessage(msg, color = "red") {
