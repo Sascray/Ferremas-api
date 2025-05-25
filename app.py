@@ -229,5 +229,31 @@ def eliminar_usuario(id):
     db.session.commit()
     return jsonify({"msg": "Usuario eliminado exitosamente"}), 200
 
+# --- Ruta para iniciar pago ---
+
+@app.route('/pago/iniciar', methods=['POST'])
+def iniciar_pago():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    metodo_pago = data.get('metodo_pago')
+
+    # Validar usuario y carrito
+    carritos = Carrito.query.filter_by(user_id=user_id).all()
+    if not carritos:
+        return jsonify({"error": "Carrito vacío o no encontrado"}), 404
+
+    # Calcular total
+    total_price = sum(c.producto.price * c.quantity for c in carritos)
+
+    # Simulación de URL de pago según método
+    if metodo_pago == 'tarjeta':
+        url_redirect = f"http://localhost:5500/webpay?user_id={user_id}&total={total_price}"
+    elif metodo_pago == 'transferencia':
+        url_redirect = f"http://localhost:5500/transferencia?user_id={user_id}&total={total_price}"
+    else:
+        return jsonify({"error": "Método de pago no soportado"}), 400
+
+    return jsonify({"url_redirect": url_redirect}), 200
+
 if __name__ == '__main__':
     app.run(debug=True)

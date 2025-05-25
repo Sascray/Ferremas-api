@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ferremas - Productos y Carrito</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f9;
+    color: #333;
+    margin: 0; padding: 20px;
+  }
+  .container {
+    max-width: 700px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+  h2 {
+    text-align: center;
+    color: #4CAF50;
+  }
+  button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #388E3C;
+  }
+  label, input {
+    margin: 8px 0;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  input[type="number"] {
+    width: 60px;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  li {
+    background: #e8f5e9;
+    margin-bottom: 8px;
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cart-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .cart-item div {
+    min-width: 100px;
+  }
+  .btn-small {
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+  .alert {
+    text-align: center;
+    margin: 12px 0;
+    font-weight: bold;
+  }
+  #logoutBtn {
+    float: right;
+    background: #d9534f;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="loginContainer">
+  <h2>Iniciar Sesión</h2>
+  <form id="loginForm">
+    <label for="emailLog">Email:</label>
+    <input type="email" id="emailLog" required />
+    <label for="passwordLog">Contraseña:</label>
+    <input type="password" id="passwordLog" required />
+    <button type="submit">Iniciar Sesión</button>
+  </form>
+  <div class="alert" id="loginMessage" style="color:red;"></div>
+</div>
+
+<div class="container" id="mainContainer" style="display:none;">
+  <button id="logoutBtn">Cerrar Sesión</button>
+  <h2>Productos Disponibles</h2>
+  <ul id="productList"></ul>
+
+  <h2>Carrito</h2>
+  <ul id="cartList"></ul>
+  <div>
+    <strong>Total: $<span id="totalPrice">0.00</span></strong>
+  </div>
+  <button id="btnMakeOrder" style="margin-top:10px;">Realizar Pedido</button>
+  <div class="alert" id="orderMessage"></div>
+</div>
+
+<script>
+const apiUrl = 'http://127.0.0.1:5000';
+
+let usuarioLogueado = null; // guardamos {id, nombre, email} luego login
+let productos = [];
+let carrito = [];
+
+const loginContainer = document.getElementById('loginContainer');
+const mainContainer = document.getElementById('mainContainer');
+const loginMessage = document.getElementById('loginMessage');
+const productList = document.getElementById('productList');
+const cartList = document.getElementById('cartList');
+const totalPriceSpan = document.getElementById('totalPrice');
+const orderMessage = document.getElementById('orderMessage');
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  loginMessage.textContent = '';
+
+  const email = document.getElementById('emailLog').value.trim();
+  const password = document.getElementById('passwordLog').value;
+
+  try {
+    const res = await fetch(`${apiUrl}/usuario/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password})
+    });
+    const data = await res.json();
+    if(data.error){
+      loginMessage.textContent = data.error;
+      return;
+    }
+    usuarioLogueado = data.usuario;
+    loginContainer.style.display = 'none';
+    mainContainer.style.display = 'block';
+    loadProducts();
+    loadCart();
+  } catch {
+    loginMessage.textContent = 'Error al conectar con el servidor.';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  usuarioLogueado = null;
+  productos = [];
+  carrito = [];
+  productList.innerHTML = '';
+  cartList.innerHTML = '';
+  totalPriceSpan.textContent = '0.00';
+  orderMessage.textContent = '';
+  loginContainer.style.display = 'block';
+  mainContainer.style.display = 'none';
+});
+
+async function loadProducts(){
+  try {
+    const res = await fetch(`${apiUrl}/productos`);
+    productos = await res.json();
+    productList.innerHTML = '';
+    if(productos.length === 0){
+      productList.innerHTML = '<li>No hay productos disponibles.</li>';
+      return;
+    }
+    productos.forEach(p => {
+      const li = document.createElement('li');
+      li.textContent = `${p.name} - $${p.price.toFixed(2)}`;
+      const inputQty = document.createElement('input');
+      inputQty.type = 'number';
+      inputQty.min = 1;
+      inputQty.value = 1;
+      inputQty.style.width = '50px';
+
+      const btnAdd = document.createElement('button');
+      btnAdd.textContent = 'Agregar al carrito';
+      btnAdd.style.marginLeft = '10px';
+      btnAdd.onclick = () => agregarAlCarrito(p.id, parseInt(inputQty.value));
+
+      li.appendChild(inputQty);
+      li.appendChild(btnAdd);
+      productList.appendChild(li);
+    });
+  } catch {
+    productList.innerHTML = '<li>Error al cargar productos.</li>';
+  }
+}
+
+async function loadCart(){
+  if(!usuarioLogueado) return;
+  try {
+    const res = await fetch(`${apiUrl}/carrito/${usuarioLogueado.id}`);
+    if(!res.ok){
+      carrito = [];
+      cartList.innerHTML = '<li>Carrito vacío</li>';
+      totalPriceSpan.textContent = '0.00';
+      return;
+    }
+    const data = await res.json();
+    carrito = data.cart;
+    renderCart();
+  } catch {
+    cartList.innerHTML = '<li>Error al cargar carrito.</li>';
+  }
+}
+
+function renderCart(){
+  cartList.innerHTML = '';
+  if(carrito.length === 0){
+    cartList.innerHTML = '<li>Carrito vacío</li>';
+    totalPriceSpan.textContent = '0.00';
+    return;
+  }
+  let total = 0;
+  carrito.forEach(item => {
+    const li = document.createElement('li');
+    const prodDiv = document.createElement('div');
+    prodDiv.textContent = `${item.product.name} - $${item.product.price.toFixed(2)} x ${item.quantity}`;
+    li.appendChild(prodDiv);
+
+    const btnRemove = document.createElement('button');
+    btnRemove.textContent = 'Eliminar';
+    btnRemove.className = 'btn-small';
+    btnRemove.onclick = () => eliminarDelCarrito(item.product.id);
+    li.appendChild(btnRemove);
+
+    cartList.appendChild(li);
+    total += item.product.price * item.quantity;
+  });
+  totalPriceSpan.textContent = total.toFixed(2);
+}
+
+async function agregarAlCarrito(productId, quantity){
+  if(!usuarioLogueado) {
+    alert('Debes iniciar sesión para agregar productos al carrito.');
+    return;
+  }
+  if(quantity <= 0 || isNaN(quantity)){
+    alert('Cantidad inválida.');
+    return;
+  }
+  try {
+    const res = await fetch(`${apiUrl}/carrito/agregar`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        user_id: usuarioLogueado.id,
+        product_id: productId,
+        quantity
+      })
+    });
+    const data = await res.json();
+    if(data.error){
+      alert(data.error);
+    } else {
+      loadCart();
+    }
+  } catch {
+    alert('Error al conectar con el servidor.');
+  }
+}
+
+async function eliminarDelCarrito(productId){
+  if(!usuarioLogueado) return;
+  try {
+    const res = await fetch(`${apiUrl}/carrito/eliminar`, {
+      method: 'DELETE',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        user_id: usuarioLogueado.id,
+        product_id: productId
+      })
+    });
+    const data = await res.json();
+    if(data.error){
+      alert(data.error);
+    } else {
+      loadCart();
+    }
+  } catch {
+    alert('Error al conectar con el servidor.');
+  }
+}
+
+document.getElementById('btnMakeOrder').addEventListener('click', async () => {
+  if(!usuarioLogueado) {
+    alert('Debes iniciar sesión para hacer un pedido.');
+    return;
+  }
+  try {
+    const res = await fetch(`${apiUrl}/pedido`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({user_id: usuarioLogueado.id})
+    });
+    const data = await res.json();
+    if(data.error){
+      orderMessage.style.color = 'red';
+      orderMessage.textContent = data.error;
+    } else {
+      orderMessage.style.color = 'green';
+      orderMessage.textContent = `Pedido realizado correctamente. Total: $${data.total_price.toFixed(2)}`;
+      loadCart();
+    }
+  } catch {
+    orderMessage.style.color = 'red';
+    orderMessage.textContent = 'Error al conectar con el servidor.';
+  }
+});
+</script>
+
+</body>
+</html>

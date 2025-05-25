@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FERREMAS - Pago Seguro</title>
+<style>
+  /* Reset y estilos base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%);
+    margin: 0;
+    padding: 40px 15px;
+    color: #222;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+  .container {
+    background: white;
+    max-width: 480px;
+    width: 100%;
+    border-radius: 16px;
+    padding: 30px 35px;
+    box-shadow: 0 14px 36px rgba(0,0,0,0.18);
+  }
+  h2 {
+    text-align: center;
+    color: #2e7d32;
+    margin-bottom: 35px;
+    font-weight: 900;
+    letter-spacing: 1.3px;
+    user-select: none;
+  }
+  .total-pago {
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #388e3c;
+    user-select: none;
+  }
+  label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #555;
+    user-select: none;
+  }
+  select {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 17px;
+    border-radius: 10px;
+    border: 2px solid #a5d6a7;
+    background: #f9fff9;
+    transition: border-color 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+  }
+  select:hover,
+  select:focus {
+    border-color: #388e3c;
+    outline: none;
+  }
+  button {
+    margin-top: 30px;
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 900;
+    color: white;
+    background-color: #388e3c;
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(56, 142, 60, 0.7);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.15s ease;
+    user-select: none;
+  }
+  button:hover {
+    background-color: #2e7d32;
+    transform: scale(1.05);
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+  .message {
+    margin-top: 28px;
+    font-weight: 700;
+    text-align: center;
+    font-size: 16px;
+    color: #d32f2f;
+    min-height: 24px;
+    user-select: none;
+  }
+  .message.success {
+    color: #388e3c;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" role="main" aria-label="Formulario de pago seguro">
+  <h2>Pago Seguro - FERREMAS</h2>
+
+  <div class="total-pago" aria-live="polite" aria-atomic="true">
+    Total a pagar: $<span id="totalAmount" aria-label="Monto total a pagar">0.00</span>
+  </div>
+
+  <label for="paymentMethod">Método de pago:</label>
+  <select id="paymentMethod" aria-required="true" aria-describedby="paymentHelp">
+    <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+    <option value="transferencia">Transferencia Bancaria</option>
+  </select>
+  <div id="paymentHelp" style="font-size:12px; color:#666; margin-top:6px; user-select:none;">
+    Elige tu método de pago preferido para completar la compra.
+  </div>
+
+  <button id="payBtn" type="button" aria-live="polite" aria-busy="false">Realizar Pago</button>
+
+  <div class="message" id="paymentMessage" role="alert" aria-live="assertive"></div>
+</div>
+
+<script>
+  const apiUrl = 'http://127.0.0.1:5000';
+  const userId = 1; // Cambiar para obtener usuario actual dinámicamente
+
+  // Mostrar total calculado desde backend
+  async function loadTotal() {
+    try {
+      const res = await fetch(`${apiUrl}/carrito/${userId}`);
+      if (!res.ok) throw new Error('Error en respuesta del servidor');
+      const data = await res.json();
+      if (data.cart && data.cart.length > 0) {
+        let total = 0;
+        data.cart.forEach(item => total += item.product.price * item.quantity);
+        document.getElementById('totalAmount').textContent = total.toFixed(2);
+        clearMessage();
+        togglePayButton(true);
+      } else {
+        document.getElementById('totalAmount').textContent = "0.00";
+        showMessage("No hay productos en el carrito.", false);
+        togglePayButton(false);
+      }
+    } catch {
+      showMessage("Error al cargar total de la compra.", false);
+      togglePayButton(false);
+    }
+  }
+
+  function showMessage(msg, success = false) {
+    const el = document.getElementById('paymentMessage');
+    el.textContent = msg;
+    el.className = 'message ' + (success ? 'success' : '');
+  }
+  function clearMessage() {
+    const el = document.getElementById('paymentMessage');
+    el.textContent = '';
+    el.className = 'message';
+  }
+
+  function togglePayButton(enabled) {
+    const btn = document.getElementById('payBtn');
+    btn.disabled = !enabled;
+    btn.setAttribute('aria-disabled', !enabled);
+  }
+
+  document.getElementById('payBtn').addEventListener('click', async () => {
+    clearMessage();
+    togglePayButton(false);
+    const btn = document.getElementById('payBtn');
+    btn.textContent = 'Procesando pago...';
+    btn.setAttribute('aria-busy', 'true');
+
+    const method = document.getElementById('paymentMethod').value;
+    try {
+      const res = await fetch(`${apiUrl}/pago/iniciar`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ user_id: userId, metodo_pago: method })
+      });
+      const data = await res.json();
+
+      if (data.url_redirect) {
+        window.location.href = data.url_redirect;
+      } else if (data.msg) {
+        showMessage(data.msg, true);
+      } else if (data.error) {
+        showMessage('Error: ' + data.error);
+      } else {
+        showMessage('Respuesta inesperada del servidor.');
+      }
+    } catch {
+      showMessage('Error al conectar con el servidor.');
+    } finally {
+      btn.textContent = 'Realizar Pago';
+      btn.setAttribute('aria-busy', 'false');
+      togglePayButton(true);
+    }
+  });
+
+  // Cargar total al inicio
+  loadTotal();
+</script>
+
+</body>
+</html>

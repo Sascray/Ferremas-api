@@ -5,87 +5,345 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ferremas - Usuarios y Productos</title>
   <style>
-    /* Estilos generales */
+    /* Diseño mejorado y limpio */
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f9;
-      color: #333;
-      margin: 0; padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%);
+      color: #222;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 40px;
     }
     .container {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 20px;
+      max-width: 650px;
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 14px;
+      padding: 30px 40px;
+      margin: 20px 15px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+      width: 100%;
+      box-sizing: border-box;
+      transition: box-shadow 0.3s ease;
+    }
+    .container:hover {
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     }
     h2 {
       text-align: center;
-      color: #4CAF50;
+      color: #388E3C;
+      margin-bottom: 30px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      user-select: none;
     }
-    label, input, button {
+    label {
+      font-weight: 600;
+      margin-top: 15px;
       display: block;
-      width: 100%;
-      margin: 10px 0;
-      box-sizing: border-box;
+      color: #555;
+      user-select: none;
     }
-    input {
-      padding: 10px;
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"] {
+      padding: 14px 18px;
       font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      border-radius: 8px;
+      border: 2px solid #c8e6c9;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 8px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-weight: 500;
+      color: #333;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="number"]:focus {
+      border-color: #388E3C;
+      box-shadow: 0 0 6px #66bb6a;
+      outline: none;
     }
     button {
-      background-color: #4CAF50;
+      background-color: #388E3C;
       color: white;
       border: none;
-      padding: 12px;
-      font-size: 16px;
+      padding: 16px;
+      font-size: 17px;
       cursor: pointer;
-      border-radius: 5px;
-      transition: background-color 0.3s ease;
+      border-radius: 10px;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+      margin-top: 25px;
+      width: 100%;
+      font-weight: 700;
+      box-shadow: 0 5px 12px rgba(56, 142, 60, 0.6);
+      user-select: none;
+      letter-spacing: 0.8px;
     }
     button:hover {
-      background-color: #45a049;
+      background-color: #2e7d32;
+      transform: scale(1.05);
+    }
+    button:active {
+      transform: scale(0.98);
     }
     .alert {
       text-align: center;
-      color: red;
-      font-weight: bold;
-      margin-top: 10px;
+      font-weight: 700;
+      margin-top: 20px;
+      min-height: 28px;
+      user-select: none;
+    }
+    .alert.error {
+      color: #d32f2f;
+    }
+    .alert.success {
+      color: #388E3C;
     }
     ul {
       list-style: none;
       padding: 0;
+      margin-top: 25px;
     }
     li {
       background: #e8f5e9;
-      margin-bottom: 8px;
-      padding: 10px;
-      border-radius: 6px;
+      margin-bottom: 10px;
+      padding: 14px 18px;
+      border-radius: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 16px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      word-break: break-word;
+      font-weight: 600;
+      user-select: none;
     }
     .btn-small {
-      background-color: #388E3C;
+      background-color: #43a047;
       color: white;
       border: none;
-      padding: 6px 12px;
-      margin-left: 8px;
+      padding: 8px 16px;
+      margin-left: 10px;
       font-size: 14px;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(67, 160, 71, 0.5);
+      white-space: nowrap;
+      user-select: none;
     }
     .btn-small:hover {
-      background-color: #2E7D32;
+      background-color: #2e7d32;
+    }
+    #btnCerrarSesion {
+      float: right;
+      background: #e53935;
+      width: auto;
+      padding: 10px 22px;
+      font-size: 15px;
+      margin-bottom: 25px;
+      box-shadow: 0 5px 14px rgba(229, 57, 53, 0.6);
+      user-select: none;
+      border-radius: 10px;
+      font-weight: 700;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+    }
+    #btnCerrarSesion:hover {
+      background: #b71c1c;
+      transform: scale(1.05);
+    }
+    #btnCerrarSesion:active {
+      transform: scale(0.95);
+    }
+
+    /* Carrito flotante */
+    #carritoBoton {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #2e7d32;
+      border: none;
+      color: white;
+      padding: 16px 22px;
+      font-size: 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 5px 16px rgba(46, 125, 50, 0.7);
+      z-index: 9999;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      font-weight: 800;
+      user-select: none;
+    }
+    #carritoBoton:hover {
+      background-color: #1b5e20;
+      transform: scale(1.1);
+    }
+    #carritoPanel {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      width: 380px;
+      max-height: 520px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      padding: 22px 28px;
+      overflow-y: auto;
+      display: none;
+      z-index: 9999;
+      user-select: none;
+    }
+    #carritoPanel h3 {
+      margin-top: 0;
+      text-align: center;
+      color: #388E3C;
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: 1.1px;
+      user-select: none;
+    }
+    #carritoPanel ul {
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      margin-bottom: 18px;
+    }
+    #carritoPanel li {
+      background: #c8e6c9;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 700;
+      word-break: break-word;
+      user-select: none;
+    }
+    #carritoPanel .btn-remove {
+      background-color: #e53935;
+      font-size: 14px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      margin-left: 12px;
+      box-shadow: 0 3px 8px rgba(229, 57, 53, 0.55);
+      transition: background-color 0.3s ease;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+    }
+    #carritoPanel .btn-remove:hover {
+      background-color: #b71c1c;
+    }
+    #carritoTotal {
+      font-weight: 800;
+      text-align: right;
+      font-size: 20px;
+      color: #222;
+      margin-bottom: 20px;
+      user-select: none;
+    }
+    #btnVaciarCarrito {
+      background-color: #e53935;
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 6px 18px rgba(229, 57, 53, 0.7);
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+      user-select: none;
+    }
+    #btnVaciarCarrito:hover {
+      background-color: #b71c1c;
+      transform: scale(1.05);
+    }
+    #btnVaciarCarrito:active {
+      transform: scale(0.95);
+    }
+    #btnPagar {
+      background-color: #388E3C;
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 6px 18px rgba(56, 142, 60, 0.7);
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+      margin-top: 15px;
+      color: white;
+      user-select: none;
+    }
+    #btnPagar:hover {
+      background-color: #2e7d32;
+      transform: scale(1.05);
+    }
+    #btnPagar:active {
+      transform: scale(0.95);
+    }
+
+    /* Formulario agregar producto estilo horizontal mejorado */
+    #productForm {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    #productForm label {
+      flex: 0 0 100%;
+      margin: 0 0 8px 0;
+      font-weight: 600;
+      color: #555;
+      user-select: none;
+    }
+    #productForm input[type="text"],
+    #productForm input[type="number"] {
+      flex: 1 1 48%;
+      padding: 14px 18px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #c8e6c9;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-weight: 500;
+      color: #333;
+    }
+    #productForm input[type="text"]:focus,
+    #productForm input[type="number"]:focus {
+      border-color: #388E3C;
+      box-shadow: 0 0 6px #66bb6a;
+      outline: none;
+    }
+    #productForm button {
+      flex: 0 0 100%;
+      padding: 16px 0;
+      margin-top: 10px;
+      font-weight: 800;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(56, 142, 60, 0.7);
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+      user-select: none;
     }
   </style>
 </head>
 <body>
-
+55
 <!-- LOGIN / REGISTRO -->
 <div class="container" id="loginRegistroContainer">
   <h2>Registro de Usuario</h2>
@@ -111,13 +369,13 @@
 
 <!-- CRUD PRODUCTOS -->
 <div class="container" id="productosContainer" style="display:none;">
-  <button id="btnCerrarSesion" style="float:right; background:#d9534f;">Cerrar Sesión</button>
+  <button id="btnCerrarSesion">Cerrar Sesión</button>
   <h2>Agregar Producto</h2>
   <form id="productForm">
     <label for="name">Nombre del producto:</label>
-    <input type="text" id="name" name="name" required />
-    <label for="price">Precio:</label>
-    <input type="number" step="0.01" id="price" name="price" required />
+    <input type="text" id="name" name="name" required placeholder="Ej: Martillo Stanley" />
+    <label for="price">Precio (CLP):</label>
+    <input type="number" step="0.01" id="price" name="price" required placeholder="Ej: 23900" />
     <button type="submit">Agregar</button>
   </form>
   <div class="alert" id="message"></div>
@@ -138,26 +396,43 @@
     <button type="submit">Actualizar</button>
   </form>
   <div class="alert" id="perfilMessage"></div>
-  <button id="btnEliminarUsuario" style="background:#f44336; margin-top:20px;">Eliminar Cuenta</button>
+  <button id="btnEliminarUsuario" style="background:#e53935; margin-top:20px;">Eliminar Cuenta</button>
+</div>
+
+<!-- Botón y panel carrito flotante -->
+<button id="carritoBoton" title="Ver carrito (0)" style="display:none;">🛒 Carrito (0)</button>
+<div id="carritoPanel" style="display:none;">
+  <h3>Tu Carrito</h3>
+  <ul id="carritoLista"></ul>
+  <div id="carritoTotal">Total: $0</div>
+  <button id="btnVaciarCarrito">Vaciar Carrito</button>
+  <button id="btnPagar">Pagar</button>
 </div>
 
 <script>
   const apiUrl = 'http://127.0.0.1:5000';
   let usuarioLogueado = null;
+  let carrito = [];
 
-  function showMessage(id, msg, color = "red") {
+  // Formatear precio CLP con puntos
+  function formatearPrecioCLP(numero) {
+    return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
+  // Mostrar mensajes
+  function showMessage(id, msg, tipo = "error") {
     const el = document.getElementById(id);
-    el.style.color = color;
+    el.className = 'alert ' + (tipo === "error" ? 'error' : 'success');
     el.textContent = msg;
   }
   function clearMessages() {
-    showMessage('loginRegistroMessage', '');
-    showMessage('message', '');
-    showMessage('perfilMessage', '');
+    showMessage('loginRegistroMessage', '', "success");
+    showMessage('message', '', "success");
+    showMessage('perfilMessage', '', "success");
   }
 
-  // Registro de usuario
-  document.getElementById('registroForm').addEventListener('submit', e => {
+  // Registro usuario
+  document.getElementById('registroForm').addEventListener('submit', async e => {
     e.preventDefault();
     clearMessages();
 
@@ -165,69 +440,135 @@
     const email = document.getElementById('emailReg').value.trim();
     const password = document.getElementById('passwordReg').value;
 
-    fetch(`${apiUrl}/usuario/registro`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({nombre, email, password})
-    })
-    .then(res => res.json())
-    .then(data => {
+    try {
+      const res = await fetch(`${apiUrl}/usuario/registro`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({nombre, email, password})
+      });
+      const data = await res.json();
       if(data.error) {
         showMessage('loginRegistroMessage', data.error);
       } else {
-        showMessage('loginRegistroMessage', 'Registro exitoso, ya puedes iniciar sesión.', 'green');
+        showMessage('loginRegistroMessage', 'Registro exitoso, ya puedes iniciar sesión.', 'success');
         document.getElementById('registroForm').reset();
       }
-    })
-    .catch(() => showMessage('loginRegistroMessage', 'Error al conectar con el servidor.'));
+    } catch {
+      showMessage('loginRegistroMessage', 'Error al conectar con el servidor.');
+    }
   });
 
-  // Login de usuario
-  document.getElementById('loginForm').addEventListener('submit', e => {
+  // Login usuario
+  document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     clearMessages();
 
     const email = document.getElementById('emailLog').value.trim();
     const password = document.getElementById('passwordLog').value;
 
-    fetch(`${apiUrl}/usuario/login`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({email, password})
-    })
-    .then(res => res.json())
-    .then(data => {
+    try {
+      const res = await fetch(`${apiUrl}/usuario/login`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email, password})
+      });
+      const data = await res.json();
       if(data.error) {
         showMessage('loginRegistroMessage', data.error);
       } else {
         usuarioLogueado = data.usuario;
-        showMessage('loginRegistroMessage', `Bienvenido ${usuarioLogueado.nombre}`, 'green');
+        showMessage('loginRegistroMessage', `Bienvenido ${usuarioLogueado.nombre}`, 'success');
         mostrarProductos();
+        cargarCarrito();
       }
-    })
-    .catch(() => showMessage('loginRegistroMessage', 'Error al conectar con el servidor.'));
+    } catch {
+      showMessage('loginRegistroMessage', 'Error al conectar con el servidor.');
+    }
   });
 
-  // Mostrar CRUD productos y ocultar login/registro
+  // Mostrar productos y perfil, ocultar login
   function mostrarProductos() {
     document.getElementById('loginRegistroContainer').style.display = 'none';
     document.getElementById('productosContainer').style.display = 'block';
     document.getElementById('perfilContainer').style.display = 'block';
+    document.getElementById('carritoBoton').style.display = 'block';
     clearMessages();
     loadProducts();
+    cargarDatosPerfil();
   }
 
-  // Cerrar sesión
+  // Cerrar sesión: limpiar todo y ocultar
   document.getElementById('btnCerrarSesion').addEventListener('click', () => {
     usuarioLogueado = null;
+    carrito = [];
+    updateCarritoContador();
     document.getElementById('loginRegistroContainer').style.display = 'block';
     document.getElementById('productosContainer').style.display = 'none';
     document.getElementById('perfilContainer').style.display = 'none';
     clearMessages();
+    ocultarCarritoPanel();
+    document.getElementById('carritoBoton').style.display = 'none';
   });
 
+  // Ocultar panel carrito
+  function ocultarCarritoPanel() {
+    const carritoPanel = document.getElementById('carritoPanel');
+    carritoPanel.style.display = 'none';
+  }
+
+  // Actualizar contador carrito en botón
+  function updateCarritoContador() {
+    const carritoBoton = document.getElementById('carritoBoton');
+    carritoBoton.textContent = `🛒 Carrito (${carrito.length})`;
+  }
+
+  // Cargar productos
+  document.getElementById('btnLoad').addEventListener('click', loadProducts);
+  loadProducts(); // cargar al inicio
+
+  async function loadProducts() {
+    try {
+      const res = await fetch(`${apiUrl}/productos`);
+      const productos = await res.json();
+      const list = document.getElementById('productList');
+      list.innerHTML = '';
+      if(productos.length === 0) {
+        list.innerHTML = '<li>No hay productos aún.</li>';
+        return;
+      }
+      productos.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = `ID: ${p.id} | ${p.name} - $${formatearPrecioCLP(Math.round(p.price))}`;
+
+        // Botones Editar y Eliminar
+        const btnEdit = document.createElement('button');
+        btnEdit.textContent = 'Editar';
+        btnEdit.className = 'btn-small';
+        btnEdit.onclick = () => editarProducto(p);
+
+        const btnDelete = document.createElement('button');
+        btnDelete.textContent = 'Eliminar';
+        btnDelete.className = 'btn-small';
+        btnDelete.onclick = () => eliminarProducto(p.id);
+
+        const btnAddToCart = document.createElement('button');
+        btnAddToCart.textContent = 'Agregar al carrito';
+        btnAddToCart.className = 'btn-small';
+        btnAddToCart.style.backgroundColor = '#1976d2';
+        btnAddToCart.onclick = () => agregarAlCarrito(p.id);
+
+        li.appendChild(btnEdit);
+        li.appendChild(btnDelete);
+        li.appendChild(btnAddToCart);
+        list.appendChild(li);
+      });
+    } catch {
+      showMessage('message', "Error al cargar productos.");
+    }
+  }
+
   // Agregar producto
-  document.getElementById('productForm').addEventListener('submit', function(event) {
+  document.getElementById('productForm').addEventListener('submit', async function(event) {
     event.preventDefault();
     clearMessages();
 
@@ -243,62 +584,26 @@
       return;
     }
 
-    fetch(`${apiUrl}/producto`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, price })
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+      const response = await fetch(`${apiUrl}/producto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, price })
+      });
+      const data = await response.json();
       if (data.error) {
         showMessage('message', data.error);
       } else {
-        showMessage('message', "Producto agregado correctamente.", "green");
+        showMessage('message', "Producto agregado correctamente.", "success");
         document.getElementById('productForm').reset();
         loadProducts();
       }
-    })
-    .catch(() => {
+    } catch {
       showMessage('message', "Error al conectar con el servidor.");
-    });
+    }
   });
 
-  // Cargar productos
-  document.getElementById('btnLoad').addEventListener('click', loadProducts);
-  function loadProducts() {
-    fetch(`${apiUrl}/productos`)
-      .then(response => response.json())
-      .then(data => {
-        const list = document.getElementById('productList');
-        list.innerHTML = '';
-        if(data.length === 0) {
-          list.innerHTML = '<li>No hay productos aún.</li>';
-          return;
-        }
-        data.forEach(p => {
-          const li = document.createElement('li');
-          li.textContent = `ID: ${p.id} | ${p.name} - $${p.price.toFixed(2)}`;
-          
-          // Botones Editar y Eliminar
-          const btnEdit = document.createElement('button');
-          btnEdit.textContent = 'Editar';
-          btnEdit.className = 'btn-small';
-          btnEdit.onclick = () => editarProducto(p);
-
-          const btnDelete = document.createElement('button');
-          btnDelete.textContent = 'Eliminar';
-          btnDelete.className = 'btn-small';
-          btnDelete.onclick = () => eliminarProducto(p.id);
-
-          li.appendChild(btnEdit);
-          li.appendChild(btnDelete);
-          list.appendChild(li);
-        });
-      })
-      .catch(() => showMessage('message', "Error al cargar productos."));
-  }
-
-// Editar producto
+  // Editar producto
   function editarProducto(producto) {
     const nuevoNombre = prompt("Nuevo nombre:", producto.name);
     if (nuevoNombre === null) return;
@@ -335,6 +640,213 @@
       loadProducts();
     })
     .catch(() => alert("Error al conectar con el servidor."));
+  }
+
+  // Cargar datos para editar perfil
+  function cargarDatosPerfil() {
+    if (!usuarioLogueado) return;
+
+    fetch(`${apiUrl}/usuario/${usuarioLogueado.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) {
+          document.getElementById('nombreEditar').value = data.nombre;
+          document.getElementById('emailEditar').value = data.email;
+        }
+      })
+      .catch(() => showMessage('perfilMessage', 'Error al cargar datos del perfil.'));
+  }
+
+  // Actualizar perfil
+  document.getElementById('editarPerfilForm').addEventListener('submit', e => {
+    e.preventDefault();
+    clearMessages();
+
+    const nombre = document.getElementById('nombreEditar').value.trim();
+    const email = document.getElementById('emailEditar').value.trim();
+
+    fetch(`${apiUrl}/usuario/${usuarioLogueado.id}`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({nombre, email})
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.error) {
+        showMessage('perfilMessage', data.error);
+      } else {
+        showMessage('perfilMessage', data.msg, 'success');
+        usuarioLogueado.nombre = nombre; // Actualiza localmente
+      }
+    })
+    .catch(() => showMessage('perfilMessage', 'Error al conectar con el servidor.'));
+  });
+
+  // Eliminar cuenta
+  document.getElementById('btnEliminarUsuario').addEventListener('click', () => {
+    if (!confirm('¿Seguro quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) return;
+
+    fetch(`${apiUrl}/usuario/${usuarioLogueado.id}`, {
+      method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.msg || data.error);
+      if (!data.error) {
+        document.getElementById('btnCerrarSesion').click();
+      }
+    })
+    .catch(() => alert('Error al conectar con el servidor.'));
+  });
+
+  // --- FUNCIONES CARRITO ---
+
+  // Mostrar/ocultar panel carrito
+  const carritoBoton = document.getElementById('carritoBoton');
+  const carritoPanel = document.getElementById('carritoPanel');
+  const carritoLista = document.getElementById('carritoLista');
+  const carritoTotal = document.getElementById('carritoTotal');
+  const btnVaciarCarrito = document.getElementById('btnVaciarCarrito');
+  const btnPagar = document.getElementById('btnPagar');
+
+  carritoBoton.addEventListener('click', () => {
+    carritoPanel.style.display = (carritoPanel.style.display === 'block') ? 'none' : 'block';
+  });
+
+  btnVaciarCarrito.addEventListener('click', async () => {
+    if(!usuarioLogueado) {
+      alert('Debes iniciar sesión para vaciar el carrito');
+      return;
+    }
+    if(carrito.length === 0) {
+      alert('El carrito ya está vacío');
+      return;
+    }
+    if(!confirm('¿Seguro quieres vaciar todo el carrito?')) return;
+
+    try {
+      const res = await fetch(`${apiUrl}/carrito/eliminar`, {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: usuarioLogueado.id})
+      });
+      const data = await res.json();
+      if(data.error){
+        alert(data.error);
+      } else {
+        alert(data.msg);
+        carrito = [];
+        renderCarrito();
+      }
+    } catch {
+      alert('Error al vaciar carrito');
+    }
+  });
+
+  btnPagar.addEventListener('click', () => {
+    if(carrito.length === 0){
+      alert('El carrito está vacío');
+      return;
+    }
+    if(!usuarioLogueado){
+      alert('Debes iniciar sesión para pagar');
+      return;
+    }
+    // Guardamos datos para el pago y redirigimos a la página de pago
+    localStorage.setItem('userIdForPago', usuarioLogueado.id);
+    const total = carrito.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+    localStorage.setItem('totalPago', total);
+    window.location.href = 'pagos.html';  // Cambia por ruta correcta si es necesario
+  });
+
+  // Cargar carrito desde API
+  async function cargarCarrito() {
+    if (!usuarioLogueado) return;
+    try {
+      const res = await fetch(`${apiUrl}/carrito/${usuarioLogueado.id}`);
+      if(res.status === 404) {
+        carrito = [];
+        renderCarrito();
+        return;
+      }
+      const data = await res.json();
+      carrito = data.cart || [];
+      renderCarrito();
+    } catch {
+      alert('Error al cargar carrito');
+    }
+  }
+
+  // Renderizar carrito
+  function renderCarrito() {
+    carritoLista.innerHTML = '';
+    if(carrito.length === 0){
+      carritoLista.innerHTML = '<li>Carrito vacío</li>';
+      carritoTotal.textContent = 'Total: $0';
+      carritoBoton.textContent = '🛒 Carrito (0)';
+      return;
+    }
+    let total = 0;
+    carrito.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.product.name} - $${formatearPrecioCLP(Math.round(item.product.price))} x ${item.quantity}`;
+
+      const btnRemove = document.createElement('button');
+      btnRemove.textContent = 'Eliminar';
+      btnRemove.className = 'btn-small btn-remove';
+      btnRemove.onclick = () => eliminarDelCarrito(item.product.id);
+
+      li.appendChild(btnRemove);
+      carritoLista.appendChild(li);
+
+      total += item.product.price * item.quantity;
+    });
+    carritoTotal.textContent = `Total: $${formatearPrecioCLP(Math.round(total))}`;
+    carritoBoton.textContent = `🛒 Carrito (${carrito.length})`;
+  }
+
+  // Agregar producto al carrito
+  async function agregarAlCarrito(productId) {
+    if(!usuarioLogueado){
+      alert('Debes iniciar sesión para agregar al carrito');
+      return;
+    }
+    try {
+      const res = await fetch(`${apiUrl}/carrito/agregar`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: usuarioLogueado.id, product_id: productId, quantity: 1})
+      });
+      const data = await res.json();
+      if(data.error){
+        alert(data.error);
+      } else {
+        alert('Producto agregado al carrito');
+        cargarCarrito();
+      }
+    } catch {
+      alert('Error al agregar al carrito');
+    }
+  }
+
+  // Eliminar producto del carrito
+  async function eliminarDelCarrito(productId) {
+    try {
+      const res = await fetch(`${apiUrl}/carrito/eliminar`, {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: usuarioLogueado.id, product_id: productId})
+      });
+      const data = await res.json();
+      if(data.error){
+        alert(data.error);
+      } else {
+        alert(data.msg);
+        cargarCarrito();
+      }
+    } catch {
+      alert('Error al eliminar producto del carrito');
+    }
   }
 </script>
 
