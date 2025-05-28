@@ -343,7 +343,7 @@
   </style>
 </head>
 <body>
-55
+
 <!-- LOGIN / REGISTRO -->
 <div class="container" id="loginRegistroContainer">
   <h2>Registro de Usuario</h2>
@@ -743,20 +743,42 @@
     }
   });
 
-  btnPagar.addEventListener('click', () => {
-    if(carrito.length === 0){
+  // --- MODIFICACION: Integración botón Pagar con PayPal Sandbox ---
+
+  btnPagar.addEventListener('click', async () => {
+    if (carrito.length === 0) {
       alert('El carrito está vacío');
       return;
     }
-    if(!usuarioLogueado){
+    if (!usuarioLogueado) {
       alert('Debes iniciar sesión para pagar');
       return;
     }
-    // Guardamos datos para el pago y redirigimos a la página de pago
-    localStorage.setItem('userIdForPago', usuarioLogueado.id);
+
+    // Calcular total (suponiendo USD, si usas CLP ajusta el backend)
     const total = carrito.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-    localStorage.setItem('totalPago', total);
-    window.location.href = 'pagos.html';  // Cambia por ruta correcta si es necesario
+
+    try {
+      const res = await fetch(`${apiUrl}/paypal/crear-pedido`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ total: total })
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        alert('Error al crear el pedido: ' + data.error);
+        return;
+      }
+      if (data.approve_url) {
+        // Redirige a PayPal para aprobar el pago
+        window.location.href = data.approve_url;
+      } else {
+        alert('No se recibió URL de aprobación del pago.');
+      }
+    } catch (error) {
+      alert('Error conectando con el servidor de pagos.');
+    }
   });
 
   // Cargar carrito desde API

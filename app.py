@@ -1,7 +1,9 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  # Importa CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+import base64
+import requests
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas las rutas
@@ -149,13 +151,21 @@ def remove_from_cart():
     user_id = data.get('user_id')
     product_id = data.get('product_id')
 
-    carrito = Carrito.query.filter_by(user_id=user_id, product_id=product_id).first()
-    if not carrito:
-        return jsonify({'error': 'Producto no encontrado en el carrito'}), 404
+    if product_id:
+        carrito = Carrito.query.filter_by(user_id=user_id, product_id=product_id).first()
+        if not carrito:
+            return jsonify({'error': 'Producto no encontrado en el carrito'}), 404
 
-    db.session.delete(carrito)
-    db.session.commit()
-    return jsonify({'msg': 'Producto eliminado del carrito'}), 200
+        db.session.delete(carrito)
+        db.session.commit()
+        return jsonify({'msg': 'Producto eliminado del carrito'}), 200
+    else:
+        # Eliminar todo el carrito si no se pasa product_id
+        carritos = Carrito.query.filter_by(user_id=user_id).all()
+        for carrito in carritos:
+            db.session.delete(carrito)
+        db.session.commit()
+        return jsonify({'msg': 'Carrito vaciado correctamente'}), 200
 
 # --- API Usuarios ---
 
@@ -229,7 +239,7 @@ def eliminar_usuario(id):
     db.session.commit()
     return jsonify({"msg": "Usuario eliminado exitosamente"}), 200
 
-# --- Ruta para iniciar pago ---
+# --- Ruta para iniciar pago simulado ---
 
 @app.route('/pago/iniciar', methods=['POST'])
 def iniciar_pago():
@@ -254,6 +264,89 @@ def iniciar_pago():
         return jsonify({"error": "Método de pago no soportado"}), 400
 
     return jsonify({"url_redirect": url_redirect}), 200
+
+# --- INTEGRACION PAYPAL SANDBOX ---
+
+PAYPAL_CLIENT_ID = 'ARE_IekSwYj8N98RBPJIBi-a8NH9AImYg5yxgjkCUG-qScEhsMOT0zRznATj7PkPLHoCpyic7MFPurSG'
+PAYPAL_SECRET = 'EPn7DE4ZvSI7zQZ2SwYvvHs9lEjNY2bHE7FNmNg3omeA9_DSu7Rg_0lhVWThTZ4RTrbwtwf0duQZYWvN'
+PAYPAL_BASE_URL = 'https://api-m.sandbox.paypal.com'
+
+def get_paypal_access_token():
+    auth = base64.b64encode(f"{PAYPAL_CLIENT_ID}:{PAYPAL_SECRET}".encode()).decode()
+    headers = {
+        "Authorization": f"Basic {auth}",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    data = {
+        "grant_type": "client_credentials"
+    }
+    r = requests.post(f"{PAYPAL_BASE_URL}/v1/oauth2/token", headers=headers, data=data)
+    r.raise_for_status()
+    return r.json()['access_token']
+
+@app.route('/paypal/crear-pedido', methods=['POST'])
+def paypal_crear_pedido():
+    data = request.get_json()
+    total = data.get('total')
+    if total is None:
+        return jsonify({"error": "Total no especificado"}), 400
+
+    access_token = get_paypal_access_token()
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    order_payload = {
+        "intent": "CAPTURE",
+        "purchase_units": [
+            {
+                "amount": {
+                    "currency_code": "USD",
+                    "value": f"{total:.2f}"
+                }
+            }
+        ],
+        "application_context": {
+            "return_url": "http://localhost:5000/paypal/pago-exitoso",
+            "cancel_url": "http://localhost:5000/paypal/pago-cancelado"
+        }
+    }
+
+    response = requests.post(f"{PAYPAL_BASE_URL}/v2/checkout/orders", headers=headers, json=order_payload)
+    if response.status_code != 201:
+        return jsonify({"error": "Error creando el pedido en PayPal"}), 500
+
+    order = response.json()
+    for link in order['links']:
+        if link['rel'] == 'approve':
+            return jsonify({"id": order['id'], "approve_url": link['href']})
+
+    return jsonify({"error": "No se encontró link de aprobación"}), 500
+
+@app.route('/paypal/pago-exitoso')
+def paypal_pago_exitoso():
+    token = request.args.get('token')
+    if not token:
+        return "Token no proporcionado", 400
+
+    access_token = get_paypal_access_token()
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    capture_resp = requests.post(f"{PAYPAL_BASE_URL}/v2/checkout/orders/{token}/capture", headers=headers)
+    if capture_resp.status_code == 201:
+        # Aquí puedes limpiar carrito o registrar pedido en DB si quieres
+        return "Pago realizado con éxito. ¡Gracias por su compra!"
+    else:
+        return f"Error capturando el pago: {capture_resp.text}", 500
+
+@app.route('/paypal/pago-cancelado')
+def paypal_pago_cancelado():
+    return "Pago cancelado por el usuario."
 
 if __name__ == '__main__':
     app.run(debug=True)

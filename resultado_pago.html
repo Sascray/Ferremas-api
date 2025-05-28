@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resultado del Pago</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f9f4;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    .resultado {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #388E3C;
+    }
+    p {
+      font-size: 18px;
+      margin-bottom: 25px;
+    }
+    .success {
+      color: #388E3C;
+      font-weight: 700;
+    }
+    .error {
+      color: #d32f2f;
+      font-weight: 700;
+    }
+    button {
+      background-color: #388E3C;
+      border: none;
+      color: white;
+      padding: 14px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: 700;
+    }
+    button:hover {
+      background-color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <div class="resultado" id="resultadoPago">
+    <h1>Procesando pago...</h1>
+    <p id="mensajePago"></p>
+    <button id="btnVolver">Volver a la tienda</button>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token'); // id de pago
+    const payerID = params.get('PayerID'); // id pagador (solo en aprobados)
+    const cancel = params.get('cancel');
+
+    const mensajePago = document.getElementById('mensajePago');
+    const titulo = document.querySelector('h1');
+
+    if(cancel !== null){
+      titulo.textContent = 'Pago Cancelado';
+      mensajePago.textContent = 'Has cancelado el pago. No se realizó ninguna transacción.';
+      titulo.classList.add('error');
+    } else if(token && payerID){
+      titulo.textContent = 'Pago Aprobado';
+      mensajePago.textContent = `Pago aprobado con éxito. Token: ${token}`;
+      titulo.classList.add('success');
+    } else {
+      titulo.textContent = 'Resultado Desconocido';
+      mensajePago.textContent = 'No se pudo determinar el estado del pago.';
+      titulo.classList.add('error');
+    }
+
+    document.getElementById('btnVolver').addEventListener('click', () => {
+      window.location.href = 'pagina.html'; // Cambia a la ruta de tu tienda
+    });
+  </script>
+</body>
+</html>
